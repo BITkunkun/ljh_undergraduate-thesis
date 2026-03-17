@@ -1,0 +1,84 @@
+\chapter{4}
+
+\section{字体效果表格}
+
+% 公式上下不要空行，置于同一个段落下即可，否则上下距离会出现高度不一致的问题
+\begin{equation}
+	LRI=1\ ∕\ \sqrt{1+{\left(\frac{{\mu }_{R}}{{\mu }_{s}}\right)}^{2}{\left(\frac{{\delta }_{R}}{{\delta }_{s}}\right)}^{2}}
+\end{equation}
+
+% 列：Regular、Italic、Bold、Bold Italic
+% 行：宋体、黑体、楷体、Serif、Sans Serif、Typewriter、Math
+
+\begin{table}[htb]
+	\centering
+	\caption{字体效果表格}
+	\begin{tabular}{@{}lllll@{}}
+		\toprule
+		& Regular & Bold & Italic & Bold Italic \\ \midrule
+		宋体       & 宋体      & \colorbox{orange}{\textbf{宋体粗体}} & \textit{楷体}     &   \colorbox{gray}{\textbf{\textit{楷书粗斜体}}}  \\
+		黑体         & {\heiti{}黑体}      & \textbf{\heiti{}黑体粗体} &   \textit{\heiti{}黑体斜体}     & \colorbox{gray}{\textit{\textbf{\heiti{}黑体粗斜体}}}   \\
+		楷体         & {\kaishu{}楷书}      & \textbf{\kaishu{}楷书粗体} & \textit{\kaishu{}斜体楷体} &  \colorbox{gray}{\textbf{\textit{\kaishu{}楷书粗斜体}}}    \\
+		Serif(Roman/Normal)      &    Regular    &  \textbf{Bold}  &    \textit{Italic}    &     \textbf{\textit{Bold Italic}}    \\
+		Sans Serif &  \textsf{Regular}       &  \textbf{\textsf{Bold}}    &  \textit{\textsf{Bold}}   &    \textbf{\textit{\textsf{Bold}}}   \\
+		% 有些字体缺少特定变体，LaTeX会抛出警告，同时尽量替换为相近变体。
+		% 若编译结果能接受，可忽略之。
+		% 例如此处Typewriter代表的Latin Modern Sans Typewriter（lmtt）字体没有bold extended italic（bx/it）变体，
+		% 所以`\textbf{\textit{\texttt{…}}}`会被替换为bold slant（b/sl）变体，并引发如下警告。（其中TU指字体编码）
+		% Font shape `TU/lmtt/bx/it' in size <…> not available. Font shape `TU/lmtt/b/sl' tried instead.
+		Typewriter &  \texttt{Regular}       &  \textbf{\texttt{Bold}}    &  \textit{\texttt{Bold}}   &    \textbf{\textit{\texttt{Bold}}}   \\
+		Math       &   $\mathnormal{Regular} \mathrm{Roman}$  & $\mathbf{Bold}$   &    $\mathit{Italic}$    &  $\mathbf{\mathit{Bold Italic}}$    \\ \bottomrule
+	\end{tabular}
+\end{table}
+
+\begin{itemize}[nosep]
+	\item \colorbox{orange}{宋体粗体}在 Windows 下会成为黑体。这是因为 Windows 的中易宋体没有粗体字重而进行的妥协。
+	如果想要获得宋体粗体的样式，请在配置中开启伪粗体选项。
+	\item \colorbox{gray}{粗斜体}的效果是因操作系统字体而定的，中文写作中不会使用这种字形，可以忽略。
+\end{itemize}
+
+\textit{有关公式与上下文间距的一些注意事项：请保证源码中的公式的环境（如}
+\\ \verb|\begin{equation}|
+	\textit{）与上一段落不要有空行。否则，公式和上文段落之间会有额外的空白。}
+	
+	
+	\section{常见问题和疑难解答}
+	
+	如果您遇到\href{https://bithesis.bitnp.net/faq/char-missing.html}{生僻字无法显示}、
+	\href{https://bithesis.bitnp.net/faq/enumitem-nosep.html}{列表项间距过大}、
+	\href{https://bithesis.bitnp.net/faq/longtable.html}{三线表需要跨页}等问题，
+	请参考\textcolor{magenta}{\href{https://bithesis.bitnp.net/faq/}{在线文档的「疑难杂症」部分}}。
+	
+	\section{代码片段}
+	
+	\begin{lstlisting}[language=Python, caption={Python Code}, label={lst:pythonfile}]
+		import numpy as np
+		
+		def incmatrix(genl1,genl2):
+		m = len(genl1)
+		n = len(genl2)
+		M = None #to become the incidence matrix
+		VT = np.zeros((n*m,1), int)  #dummy variable
+		
+		#compute the bitwise xor matrix
+		M1 = bitxormatrix(genl1)
+		M2 = np.triu(bitxormatrix(genl2),1)
+		
+		for i in range(m-1):
+		for j in range(i+1, m):
+		[r,c] = np.where(M2 == M1[i,j])
+		for k in range(len(r)):
+		VT[(i)*n + r[k]] = 1;
+		VT[(i)*n + c[k]] = 1;
+		VT[(j)*n + r[k]] = 1;
+		VT[(j)*n + c[k]] = 1;
+		
+		if M is None:
+		M = np.copy(VT)
+		else:
+		M = np.concatenate((M, VT), 1)
+		
+		VT = np.zeros((n*m,1), int)
+		
+		return M
+	\end{lstlisting}
