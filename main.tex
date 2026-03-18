@@ -13,12 +13,20 @@
 % 开启盲审格式 blindPeerReview=true (如：[type=bachelor,blindPeerReview=true])
 
 \documentclass[type=bachelor]{bithesis}
+
+% === 图文间距优化（关键修改）===
+% \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+% \setlength{\intextsep}{8pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{12pt}
+\setlength{\intextsep}{12pt}
+
+
 % 调整图片与上方文字的间距
-\setlength{\abovecaptionskip}{10pt}  
+%\setlength{\abovecaptionskip}{10pt}  
 % 调整图片与下方文字的间距
-\setlength{\belowcaptionskip}{10pt} 
+%\setlength{\belowcaptionskip}{10pt} 
 % 调整浮动体与周围文字的垂直间距（适用于单栏文档）
-\setlength{\intextsep}{10pt}         
+%\setlength{\intextsep}{10pt}         
 
 % 此处仅列出常用的配置。全部配置用法请见「bithesis.pdf」手册。
 \BITSetup{
@@ -71,6 +79,8 @@
 \usepackage{subfig}
 \usepackage{booktabs}
 \usepackage{amsmath}
+\usepackage{float} 
+%\usepackage{subfigure}
 
 % 大部分关于参考文献样式的修改，都可以通过此处的选项进行配置。
 % 详情请搜索「biblatex-gb7714-2015 文档」进行阅读。
