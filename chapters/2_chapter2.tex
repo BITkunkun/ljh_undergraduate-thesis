@@ -26,7 +26,6 @@
 	\label{常见四旋翼飞行器}
 \end{figure}
 
-
 为建立精确且通用的动力学模型，本小节参考经典文献\parencite{6289431}的方法，对四旋翼无人机进行刚体动力学建模。如图所示，我们定义一个右手惯性坐标系   $O - X_eY_eZ_e$ ，这里令地面坐标系为惯性坐标系，其单位基向量为  $ \{\mathbf{e}_1, \mathbf{e}_2, \mathbf{e}_3\} $ ；以及一个固连于无人机质心的机体坐标系  $ O - X_bY_bZ_b $ ，其单位基向量为  $ \{\mathbf{b}_1, \mathbf{b}_2, \mathbf{b}_3\} $ 。无人机的姿态由从  $ O - X_eY_eZ_e $  到  $ O - X_bY_bZ_b $  的旋转矩阵  $ {}_b^\omega R = R = [{\mathbf{b}}_1,{\mathbf{b}}_2,{\mathbf{b}}_3]\in SO(3) $  描述。该矩阵属于特殊正交群，其中 $ \mathbf{b}_1 = R \mathbf{e}_1,  \mathbf{b}_2 = R \mathbf{e}_2, \mathbf{b}_3 = R \mathbf{e}_3 $。基于$ z-y-x $欧拉角顺序（即偏航角  $ \psi $ 、俯仰角  $ \theta $ 、滚转角  $ \phi $ ）来参数化旋转矩阵 $ \boldsymbol{R} $ ，其具体形式可写为：
 \begin{equation}
 	{R} = {}_b^\omega R(\phi,\theta,\psi) = 
@@ -45,7 +44,7 @@
 \end{equation}
 其中  $ \mathbf{c} $  和  $ \mathbf{s} $  分别为余弦和正弦的简写，例如  $ \mathbf{c}_\psi = \cos\psi $ ,  $ \mathbf{s}_\theta = \sin\theta $  等。
 
-设  $ \mathbf{p} = [x, y, z]^\top \in \mathbb{R}^3 $  为无人机质心在惯性系  $O - X_eY_eZ_e$  中的位置向量， $ \mathbf{v} \in \mathbb{R}^3 $  为其对应的线速度。在机体坐标系 $ O - X_bY_bZ_b $ 中定义向量  $ \boldsymbol{\Omega} \in \mathbb{R}^3 $  表示机体坐标系  $ O - X_bY_bZ_b $  相对于惯性系  $ O - X_eY_eZ_e $  的角速度。无人机的质量为  $ m $ ，其在机体坐标系下的常值转动惯量矩阵为  $ {J} \in \mathbb{R}^{3 \times 3} $ 。
+设  $\mathbf{p}=[x;y;z] \in \mathbb{R}^3 $  为无人机质心在惯性系  $O - X_eY_eZ_e$  中的位置向量， $ \mathbf{v} \in \mathbb{R}^3 $  为其对应的线速度。在机体坐标系 $ O - X_bY_bZ_b $ 中定义向量  $ \boldsymbol{\Omega} \in \mathbb{R}^3 $  表示机体坐标系  $ O - X_bY_bZ_b $  相对于惯性系  $ O - X_eY_eZ_e $  的角速度。无人机的质量为  $ m $ ，其在机体坐标系下的常值转动惯量矩阵为  $ {J} \in \mathbb{R}^{3 \times 3} $ 。
 
 基于牛顿-欧拉方程，四旋翼无人机的刚体动力学方程可表述为：
 \begin{align}
@@ -58,7 +57,7 @@
 	{J} \dot{\boldsymbol{\Omega}} &= - \boldsymbol{\Omega} \times {J} \boldsymbol{\Omega} + \boldsymbol{\tau}.
 	\label{旋转动力学}
 \end{align}
-其中， $ g $  为重力加速度，符号  $ (\cdot)_\times $  表示将向量映射为对应的反对称矩阵，即对于任意向量  $ \boldsymbol{x} = [x_1, x_2, x_3]^\top $ ，有
+其中， $ g $  为重力加速度，符号  $ (\cdot)_\times $  表示将向量映射为对应的反对称矩阵，即对于任意向量$\boldsymbol{x}=[x_1;x_2;x_3]$ ，有
 \begin{equation}
 \boldsymbol{x}_\times =
 \begin{bmatrix}
@@ -154,7 +153,7 @@
 	\end{cases}
 	\label{eq:double_integrator_dynamic}
 \end{equation}
-其中，$\mathbf{u}_i(t) \in \mathbb{R}^m$ 为第 $i$ 架无人机的控制输入向量，物理意义为虚拟加速度指令。该指令由顶层编队控制器生成，并通过逆动力学映射转化为底层飞控所需的推力与姿态角指令。
+其中，$\mathbf{u}_i(t) \in \mathbb{R}^m$ 为第$i$架无人机的控制输入向量，物理意义为虚拟加速度指令。该指令由顶层编队控制器生成，并通过逆动力学映射转化为底层飞控所需的推力与姿态角指令。
 
 为了便于应用现代控制理论进行协同算法设计，将式(\ref{eq:double_integrator_dynamic})转化为连续时间的线性状态空间方程形式。定义第 $i$ 架无人机的状态向量 $\mathbf{x}_i \in \mathbb{R}^{2m}$ 为：
 \begin{equation}
@@ -185,7 +184,7 @@
 \end{equation}
 上式中，$\mathbf{I}_m$ 表示 $m$ 维单位矩阵，$\mathbf{0}_m$ 表示 $m$ 维全零矩阵。
 
-对于包含 $N$ 架无人机的整个集群系统，通过定义全局状态向量 $\mathbf{x} = [\mathbf{x}_1^\top, \dots, \mathbf{x}_N^\top]^\top \in \mathbb{R}^{2mN}$ 和全局输入向量 $\mathbf{u} = [\mathbf{u}_1^\top, \dots, \mathbf{u}_N^\top]^\top \in \mathbb{R}^{mN}$，集群整体的动力学模型可写为 Kronecker 积形式：
+对于包含 $N$ 架无人机的整个集群系统，通过定义全局状态向量 $\mathbf{x} = [\mathbf{x}_1;\dots;\mathbf{x}_N] \in \mathbb{R}^{2mN}$ 和全局输入向量 $\mathbf{u} = [\mathbf{u}_1;\dots;\mathbf{u}_N] \in \mathbb{R}^{mN}$，集群整体的动力学模型可写为 Kronecker 积形式：
 \begin{equation}
 	\dot{\mathbf{x}} = (I_N \otimes A) \mathbf{x} + (I_N \otimes B) \mathbf{u}.
 	\label{eq:state_space_global}
@@ -201,7 +200,7 @@
 无人机集群的分布式协同控制高度依赖于个体间的信息交互网络。在数学描述上，代数图论为刻画集群通信拓扑提供了标准语言，而刚性图理论则为解决基于距离或方位的编队队形保持与定位问题提供了严谨的几何约束判据。本节将分别从通信拓扑描述与几何构型约束两个维度展开讨论。
 
 \subsection{代数图论基础}
-令 $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ 表示一个包含 $N$ 个节点的图，用于描述无人机集群的通信拓扑。其中，节点集合 $\mathcal{V} = \{1, 2, \dots, N\}$ 代表集群中的 $N$ 架无人机，边集合 $\mathcal{E} \subseteq \mathcal{V} \times \mathcal{V}$ 代表无人机之间的通信链路或传感关系，边的总数量记为 $M = |\mathcal{E}|$。若无人机 $j$ 能够向无人机 $i$ 发送信息，则存在一条边 $(i, j) \in \mathcal{E}$。此时，称节点 $j$ 为节点 $i$ 的邻居，节点 $i$ 的邻居集合记为 $\mathcal{N}_i = \{j \in \mathcal{V} \mid (i, j) \in \mathcal{E},i \neq j\}$。图的代数性质主要通过以下几类矩阵来刻画：
+令 $\mathcal{G} = (\mathcal{V}, \mathcal{E})$ 表示一个包含 $N$ 个节点的图，用于描述无人机集群的通信拓扑。其中，节点集合 $\mathcal{V} = \{1, 2, \dots, N\}$ 代表集群中的 $N$ 架无人机，边集合 $\mathcal{E} \subseteq \mathcal{V} \times \mathcal{V}$ 代表无人机之间的通信链路或传感关系，边的总数量记为 $M = |\mathcal{E}|$。若无人机 $j$ 能够向无人机$i$发送信息，则存在一条边$(i, j) \in \mathcal{E}$。此时，称节点 $j$ 为节点 $i$ 的邻居，节点$i$的邻居集合记为 $\mathcal{N}_i = \{j \in \mathcal{V} \mid (i, j) \in \mathcal{E},i \neq j\}$。图的代数性质主要通过以下几类矩阵来刻画：
 
 \textbf{（1）邻接矩阵：} $\mathcal{A} \in \mathbb{R}^{N \times N}$ 是描述图中节点间连接强度的基础矩阵。对于无权图，若 $(i, j) \in \mathcal{E}$，则 $a_{ij} = 1$，否则 $a_{ij} = 0$。对于加权图，其元素定义为：
 \begin{equation}
@@ -233,7 +232,7 @@
 对于边权为1的无向图，拉普拉斯矩阵可由关联矩阵表示为 $\mathcal{L} = \mathcal{H} \mathcal{H}^\top$。这一性质揭示了拉普拉斯矩阵半正定性的代数本质。对于无向图，若图 $\mathcal{G}$ 包含一棵生成树，则 $\mathcal{L}$ 具有唯一的零特征值，其余特征值均大于零。其最小非零特征值 $\lambda_2(\mathcal{L})$ 被称为代数连通度，数值越大，网络连通性越强，编队系统的一致性收敛速度越快。
 
 \subsection{刚性图理论}
-本小节针对刚性图理论展开讨论，主要参考\parencite{Hendrickson1992Conditions,Anderson2010FormalTO}文献。在非全维位置量测的条件下，编队队形能否保持唯一确定，取决于底层的几何约束结构。刚性图理论主要研究由节点和边构成的框架在保持边长不变的情况下，其几何形状是否具有抗形变能力。一个框架定义为 $(\mathcal{G}, \mathbf{p})$，其中 $\mathcal{G}$ 为图拓扑，$\mathbf{p} = [\mathbf{p}_1^\top, \dots, \mathbf{p}_N^\top]^\top \in \mathbb{R}^{Nn}$ 为所有节点在 $n$ 维空间中的堆叠坐标向量。
+本小节针对刚性图理论展开讨论，主要参考\parencite{Hendrickson1992Conditions,Anderson2010FormalTO}文献。在非全维位置量测的条件下，编队队形能否保持唯一确定，取决于底层的几何约束结构。刚性图理论主要研究由节点和边构成的框架在保持边长不变的情况下，其几何形状是否具有抗形变能力。一个框架定义为 $(\mathcal{G}, \mathbf{p})$，其中 $\mathcal{G}$ 为图拓扑，$\mathbf{p}=[\mathbf{p}_1;\dots;\mathbf{p}_N] \in \mathbb{R}^{Nn}$ 为所有节点在 $n$ 维空间中的堆叠坐标向量。
 
 刚性矩阵是判定无穷小刚性的核心工具。对于任意一条边 $(i, j) \in \mathcal{E}$，其长度约束满足欧氏距离方程 $||\mathbf{p}_i - \mathbf{p}_j||^2 = c_{ij}$。对该约束关于时间求导，可得一阶微分约束：
 \begin{equation}
@@ -248,6 +247,7 @@
 		Nn - \frac{n(n+1)}{2}, & \text{若 } N \ge n \\
 		\frac{N(N-1)}{2}, & \text{若 } N < n
 	\end{cases}.
+	\label{刚性矩阵秩条件}
 \end{equation}
 上式中的第一种情况对应于通常的编队规模，即节点数量足以张成 $n$ 维空间。第二种情况$ N < n$则对应于退化情形，此时节点无法张成满维空间，例如三维空间中的 2 个点只能形成一条线段，要实现刚性必须形成完全图，即所有节点间均有边相连，此时秩等于边数。
 

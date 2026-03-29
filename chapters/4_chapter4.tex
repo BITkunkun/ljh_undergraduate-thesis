@@ -1,84 +1,199 @@
-\chapter{4}
+\chapter{考虑机间避碰与通信保持的编队控制方法}
 
-\section{字体效果表格}
-
-% 公式上下不要空行，置于同一个段落下即可，否则上下距离会出现高度不一致的问题
+\section{控制目标描述}
+考虑在 $n$ 维空间中运行的 $N$ 架无人机，每架无人机的动态特性可由单积分器模型(\ref{位置导数等于速度})描述。为了在协同编队过程中实现机间避碰并保持网络通信连通性，考虑连通的通信拓扑$\mathcal{G} = (\mathcal{V}, \mathcal{E})$，相邻无人机之间的距离 $\|\mathbf{p}_i - \mathbf{p}_j\|$ 必须严格满足以下约束条件：
 \begin{equation}
-	LRI=1\ ∕\ \sqrt{1+{\left(\frac{{\mu }_{R}}{{\mu }_{s}}\right)}^{2}{\left(\frac{{\delta }_{R}}{{\delta }_{s}}\right)}^{2}}
+	\rho_{e_1} \le \|\mathbf{p}_i - \mathbf{p}_j\| \le \rho_{e_2}, \quad 0 < \rho_{e_1} < \rho_{e_2}.
+	\label{距离约束条件}
+\end{equation}
+在此约束中， $\rho_{e_1}$ 代表避免无人机发生碰撞的安全距离下界，而 $\rho_{e_2}$ 则代表保证机间可靠通信的距离上界。
+
+本章的核心控制目标是：针对具有期望无穷小刚性框架 $\mathcal{F}^* = (\mathcal{G}, \mathbf{p}^*)$ 的多智能体系统，在仅依赖局部测距和部分节点非全维绝对位置量测的情况下，设计分布式观测器与控制器，使得系统能够局部渐近收敛至期望编队位置 $\mathbf{p}^*$，并在整个收敛过程中始终满足公式中所述的机间避碰与通信保持约束。
+
+\section{控制协议设计}
+
+\subsection{分布式观测器设计}
+首先考虑无人机$i$在期望点$\mathbf{p}_i^*$附近的位置估计。为了方便推导反馈增益矩阵，将无人机编队系统在期望位置${\mathbf{p}}^*$处的刚性矩阵$\mathcal{R}_{\mathbf{p}^*}$按照无人机索引分解为：
+\begin{equation}
+	\mathcal{R}_{\mathbf{p}^*} = 
+	[\bar{C}_1,\cdots,\bar{C}_i,\cdots,\bar{C}_N],
+	\quad
+	\bar{C}_i \in \mathbb{R}^{M \times n}.
+\end{equation}
+接着矩阵$\bar{C}_i$和位置输出矩阵$\tilde{C}_i$可以联合组成无人机$i$的线性化输出矩阵：
+\begin{equation}
+	C_i = 
+	\begin{bmatrix}
+		\bar{C}_i \\
+		\tilde{C}_i
+	\end{bmatrix}.
+	\label{非全维位置输出矩阵}
+\end{equation}
+由期望位置组成的刚性矩阵$\mathcal{R}_{\mathbf{p}^*}$是已知且固定的，这使得该方法仅具备局部收敛性。
+
+由于部分无人机无法直接获取全局坐标系下的全维位置，系统需要通过观测器来估计自身位置。令 $\hat{\mathbf{p}}_i$ 表示第 $i$ 架无人机在全局坐标系中的位置估计值。基于式(\ref{非全维位置输出矩阵})非全维位置输出矩阵${C}_i$，提出如下分布式观测器设计：
+\begin{equation}
+	\dot{\hat{\mathbf{p}}}_i = \mathbf{v}_i + k_o {C}_i^\top \left[ (\mathbf{z}_i - \mathbf{z}_i^*) - \sum_{j \in \{i, \mathcal{N}_i\}} {C}_j (\hat{\mathbf{p}}_j - \hat{\mathbf{p}}_i) \right],
+\end{equation}
+其中， $k_o$ 为观测器反馈增益， $\mathbf{z}_i^*$ 为系统在期望位置 $\mathbf{p}^*$处的输出量测，$\mathbf{z}_i^*=[{\bar{\mathbf{z}}_i}^*;{\tilde{\mathbf{z}}_i}^*]$，${\bar{\mathbf{z}}_i}^*=\frac{1}{2}[\cdots;|h_{im}|\beta_{ij};\cdots]$以及${\tilde{\mathbf{z}}_i}^*=\tilde{C}_i \mathbf{p}_i^*$，$\mathcal{N}_i$ 为通信拓扑中节点 $i$ 的邻居集合。该观测器通过融合传感器量测输出与邻居节点的估计信息，实现对全局位置的渐近观测。
+
+\subsection{分布式控制器设计}
+为了引导无人机$i$收敛至期望位置$\mathbf{p}^*$，基础的反馈控制律可设计为位置估计误差的线性反馈：
+\begin{equation}
+	\tilde{\mathbf{v}}_i^* = 
+	-k_c (\hat{\mathbf{p}}_i - \mathbf{p}^*_i),
+	\label{反馈控制律}
+\end{equation}
+式中控制增益$k_c$需满足的条件将会在后续控制器设计内容中给出。
+
+然而，在缺乏全局坐标系的集群作业中，保持编队的几何刚性是实现稳定编队的前提 \cite{7074770}。基于人工势函数的梯度下降法是解决此类问题的经典范式，通过最小化个体与其邻居间的配置误差来驱动全局状态收敛\cite{10.1016/j.automatica.2011.08.019}。梯度控制律通常由具体设计的势函数表征：
+\begin{equation}
+	\nu_i(\mathbf{p}_i,\cdots,\mathbf{p}_j,\cdots)=
+	\sum_{j \in  \mathcal{N}_i} \gamma_{ij} (\beta_{ij}),
+\end{equation}
+式中$\gamma_{ij}(\cdot):\mathbb{R} \to \bar{\mathbb{R}}_+$是正定且在平衡点$\beta_{ij}^*=\|\mathbf{p}_i^* - \mathbf{p}_j^*\|^2$ 的邻域内具有解析形式。为了简洁叙述，后续将使用符号$\gamma_{ij}=\gamma_{ij} (\beta_{ij})$以及$\nu_i=\nu_i(\mathbf{p}_i,\cdots,\mathbf{p}_j,\cdots)$。此时，无人机$i$梯度控制律的解析形式可以写为：
+\begin{align}
+	\bar{\mathbf{v}}_i^* &= 
+	-\frac{1}{2} \nabla_{\mathbf{p}_i} \nu_i = 
+	-\sum_{j \in  \mathcal{N}_i} \frac{\partial \gamma_{ij}}{\partial \beta_{ij}} (\mathbf{p}_i - \mathbf{p}_j) 
+	\\
+	&= 
+	- \underbrace{
+		\sum_{j \in  \mathcal{N}_i}
+		\frac{\partial \beta_{ij}}{(\partial \|\mathbf{p}_i - \mathbf{p}_j\| \|\mathbf{p}_i - \mathbf{p}_j\|})}
+		_{\text{距离相关项}}
+	\underbrace{(\mathbf{p}_i - \mathbf{p}_j)}_{\text{相对位移项}},
+	\label{梯度控制律}
+\end{align}
+该式中距离相关项驱动无人机编队的距离收敛，而相对位移项提供方向引导。对于一阶积分器组成的多智能体系统，现有研究已证实控制律(\ref{梯度控制律})能够驱动系统局部收敛至编队集合且保持一阶刚性\cite{7074770,Kwang2014Distance,https://doi.org/10.1002/rnc.3477}：
+\begin{equation}
+	E = \{ \mathbf{p} \in \mathbb{R}^{Nn} : 
+	\|\mathbf{p}_i - \mathbf{p}_j\| = 
+	\|\mathbf{p}_i^* - \mathbf{p}_j^*\|,
+	\quad
+	\forall i,j \in \mathcal{I}_{N}
+	\}
 \end{equation}
 
-% 列：Regular、Italic、Bold、Bold Italic
-% 行：宋体、黑体、楷体、Serif、Sans Serif、Typewriter、Math
+本文的核心目标之一是确保无人机系统(\ref{一阶动力学})在收敛至期望编队位置的同时保持无穷小刚性，因此可将控制律(\ref{反馈控制律})$\tilde{\mathbf{v}}_i^*$和(\ref{梯度控制律})$\bar{\mathbf{v}}_i^*$进行结合。另外注意到本文的传感器条件中，无人机$i$无法获取全维位置下的绝对位置，因而机间相对位移项$\mathbf{p}_i - \mathbf{p}_j$无法直接进行获取，将其替换为估计值$\hat{\mathbf{p}}_i - \hat{\mathbf{p}}_j$，便可以得到一种耦合的控制律：
+\begin{equation}
+	\mathbf{v}_i^* = 
+	-\sum_{j \in  \mathcal{N}_i} \frac{\partial \gamma_{ij}}{\partial \beta_{ij}} (\hat{\mathbf{p}}_i - \hat{\mathbf{p}}_j) 
+	-k_c (\hat{\mathbf{p}}_i - \mathbf{p}^*_i).
+	\label{耦合控制律}
+\end{equation}
 
-\begin{table}[htb]
+接下来讨论函数$\gamma_{ij}$的具体数学形式。通常情况下，函数$\gamma_{ij}$具有二次项形式：
+\begin{equation}
+	\bar{\gamma}_{ij} = k_\gamma (\beta_{ij}-\beta_{ij}^*)^2,
+	\quad
+	k_\gamma > 0.
+\end{equation}
+其中 $k_\gamma > 0$ 为函数$\gamma_{ij}$的常数参数。该式仅保证距离的收敛性特性，但未考虑收敛过程中的距离约束问题。为了保证无人机编队在收敛过程中同时满足距离约束(\ref{距离约束条件})，可以设计函数$ \tilde{\gamma}_{ij} $：
+\begin{equation}
+	\tilde{\gamma}_{ij} = 
+	k_\gamma[
+		(\beta_{ij}-\beta_{ij}^*)^2 - 
+		\ln (\beta_{ij}-\rho_{e_1}^2) - 
+		\ln (\rho_{e_2}^2-\beta_{ij})
+	].
+\end{equation}
+进一步，为使$\beta_{ij}=\beta_{ij}^*$成为函数$\gamma_{ij}$的平衡点，在接近边界条件时势能趋于无穷大，同时确保势函数$\nu_i$的正定性，即$\gamma_{ij} \ge 0$并且$\frac{\partial \gamma_{ij}}{\partial \beta_{ij}}(\beta_{ij}^*)=0$。函数$\tilde{\gamma}_{ij}$可进一步修正为：
+\begin{equation}
+	\gamma_{ij} = k_\gamma \left[ (\beta_{ij} - \beta_{ij}^*)^2 + \ln \frac{(\rho_{e_2}^2 - \beta_{ij}^*)(\beta_{ij}^* - \rho_{e_1}^2)}{(\rho_{e_2}^2 - \beta_{ij})(\beta_{ij} - \rho_{e_1}^2)}  + \frac{(\rho_{e_2}^2 - 2\beta_{ij}^* + \rho_{e_1}^2)(\beta_{ij} - \beta_{ij}^*)}{(\rho_{e_2}^2 - \beta_{ij}^*)(\beta_{ij}^* - \rho_{e_1}^2)}
+	\right].
+	\label{gamma函数}
+\end{equation}
+接着将公式(\ref{gamma函数})带入公式(\ref{耦合控制律})，可以推导出分布式控制律：
+\begin{equation}
+	\mathbf{v}_i^* = 
+	- \sum_{j \in \mathcal{N}_i} \gamma_{ij}' (\hat{\mathbf{p}}_i - \hat{\mathbf{p}}_j) 
+	- k_c (\hat{\mathbf{p}}_i - {\mathbf{p}}_i^*),
+	\label{分布式控制律}
+\end{equation}
+其中
+\begin{equation}
+	\gamma_{ij}' = 
+	k_\gamma \left[ 2(\beta_{ij} - \beta_{ij}^*) + 
+	\frac{\rho_{e_1}^2+\rho_{e_2}^2-2\beta_{ij}}{(\rho_{e_2}^2-\beta_{ij}^*)(\beta_{ij}^* - \rho_{e_1}^2)}  + 
+	\frac{\rho_{e_2}^2-2\beta_{ij}^*+\rho_{e_1}^2}{(\rho_{e_2}^2-\beta_{ij}^*)(\beta_{ij}^*-\rho_{e_1}^2)}
+	\right].
+\end{equation}
+在该分布式控制律(\ref{分布式控制律})中，第一项为基于势函数梯度的相对位移控制项，主要作用是驱使无人机保持预设距离从而实现避碰和防失联；第二项则是位置反馈控制项，利用控制增益$k_c$引导编队系统整体收敛至期望参考位置 $\mathbf{p}_i^*$。
+
+为了直观理解上述函数的特性，图\ref{不同伽马函数的对比曲线}绘制了上述函数的对比曲线，其中$\rho_{e_1}=0.5m$，$\rho_{e_2}=2m$以及$\beta_{ij}^*=2 m^2$。从图中可以看出函数$\bar{\gamma}_{ij}$和$\gamma_{ij}$均大于等于0，并且在$\beta_{ij}=\beta_{ij}^*$处有极小值0，而函数$\tilde{\gamma}_{ij}$并非正定且极值不在$\beta_{ij}=\beta_{ij}^*$处。此外，函数$\gamma_{ij}$与$\tilde{\gamma}_{ij}$均具备边界性质：
+\begin{equation}
+	\lim_{\beta_{ij} \to \{0.25_+, 4_-\} } \left| \frac{\partial \gamma_{ij}}{\partial \beta_{ij}} \right| \to \infty,
+	\quad
+	\lim_{\beta_{ij} \to \{0.25_+, 4_-\} } \left| \frac{\partial \tilde{\gamma}_{ij}}{\partial \beta_{ij}} \right| \to \infty.
+\end{equation}
+这表明函数$\gamma_{ij}$与$\tilde{\gamma}_{ij}$可作为势函数的一部分，以严格的形式保证编队中无人机间的距离约束。因此可以看出函数$\gamma_{ij}$同时满足正定性和边界条件，可作为势函数的理想组成部分。
+
+\begin{figure}[H]
 	\centering
-	\caption{字体效果表格}
-	\begin{tabular}{@{}lllll@{}}
-		\toprule
-		& Regular & Bold & Italic & Bold Italic \\ \midrule
-		宋体       & 宋体      & \colorbox{orange}{\textbf{宋体粗体}} & \textit{楷体}     &   \colorbox{gray}{\textbf{\textit{楷书粗斜体}}}  \\
-		黑体         & {\heiti{}黑体}      & \textbf{\heiti{}黑体粗体} &   \textit{\heiti{}黑体斜体}     & \colorbox{gray}{\textit{\textbf{\heiti{}黑体粗斜体}}}   \\
-		楷体         & {\kaishu{}楷书}      & \textbf{\kaishu{}楷书粗体} & \textit{\kaishu{}斜体楷体} &  \colorbox{gray}{\textbf{\textit{\kaishu{}楷书粗斜体}}}    \\
-		Serif(Roman/Normal)      &    Regular    &  \textbf{Bold}  &    \textit{Italic}    &     \textbf{\textit{Bold Italic}}    \\
-		Sans Serif &  \textsf{Regular}       &  \textbf{\textsf{Bold}}    &  \textit{\textsf{Bold}}   &    \textbf{\textit{\textsf{Bold}}}   \\
-		% 有些字体缺少特定变体，LaTeX会抛出警告，同时尽量替换为相近变体。
-		% 若编译结果能接受，可忽略之。
-		% 例如此处Typewriter代表的Latin Modern Sans Typewriter（lmtt）字体没有bold extended italic（bx/it）变体，
-		% 所以`\textbf{\textit{\texttt{…}}}`会被替换为bold slant（b/sl）变体，并引发如下警告。（其中TU指字体编码）
-		% Font shape `TU/lmtt/bx/it' in size <…> not available. Font shape `TU/lmtt/b/sl' tried instead.
-		Typewriter &  \texttt{Regular}       &  \textbf{\texttt{Bold}}    &  \textit{\texttt{Bold}}   &    \textbf{\textit{\texttt{Bold}}}   \\
-		Math       &   $\mathnormal{Regular} \mathrm{Roman}$  & $\mathbf{Bold}$   &    $\mathit{Italic}$    &  $\mathbf{\mathit{Bold Italic}}$    \\ \bottomrule
-	\end{tabular}
-\end{table}
+	\includegraphics[width=0.75\linewidth]{images/gama函数的特性}
+	\caption{$\bar{\gamma}_{ij},\tilde{\gamma}_{ij},\gamma_{ij}$函数特性对比曲线}
+	\label{不同伽马函数的对比曲线}
+\end{figure}
 
-\begin{itemize}[nosep]
-	\item \colorbox{orange}{宋体粗体}在 Windows 下会成为黑体。这是因为 Windows 的中易宋体没有粗体字重而进行的妥协。
-	如果想要获得宋体粗体的样式，请在配置中开启伪粗体选项。
-	\item \colorbox{gray}{粗斜体}的效果是因操作系统字体而定的，中文写作中不会使用这种字形，可以忽略。
-\end{itemize}
 
-\textit{有关公式与上下文间距的一些注意事项：请保证源码中的公式的环境（如}
-\\ \verb|\begin{equation}|
-	\textit{）与上一段落不要有空行。否则，公式和上文段落之间会有额外的空白。}
-	
-	
-	\section{常见问题和疑难解答}
-	
-	如果您遇到\href{https://bithesis.bitnp.net/faq/char-missing.html}{生僻字无法显示}、
-	\href{https://bithesis.bitnp.net/faq/enumitem-nosep.html}{列表项间距过大}、
-	\href{https://bithesis.bitnp.net/faq/longtable.html}{三线表需要跨页}等问题，
-	请参考\textcolor{magenta}{\href{https://bithesis.bitnp.net/faq/}{在线文档的「疑难杂症」部分}}。
-	
-	\section{代码片段}
-	
-	\begin{lstlisting}[language=Python, caption={Python Code}, label={lst:pythonfile}]
-		import numpy as np
-		
-		def incmatrix(genl1,genl2):
-		m = len(genl1)
-		n = len(genl2)
-		M = None #to become the incidence matrix
-		VT = np.zeros((n*m,1), int)  #dummy variable
-		
-		#compute the bitwise xor matrix
-		M1 = bitxormatrix(genl1)
-		M2 = np.triu(bitxormatrix(genl2),1)
-		
-		for i in range(m-1):
-		for j in range(i+1, m):
-		[r,c] = np.where(M2 == M1[i,j])
-		for k in range(len(r)):
-		VT[(i)*n + r[k]] = 1;
-		VT[(i)*n + c[k]] = 1;
-		VT[(j)*n + r[k]] = 1;
-		VT[(j)*n + c[k]] = 1;
-		
-		if M is None:
-		M = np.copy(VT)
-		else:
-		M = np.concatenate((M, VT), 1)
-		
-		VT = np.zeros((n*m,1), int)
-		
-		return M
-	\end{lstlisting}
+
+\section{稳定性证明}
+考虑在上述设计的分布式观测器和控制器导引下的无人机编队，进一步分析系统的稳定性与约束保持性。为了得到整个无人机编队的闭环系统，定义无人机编队的全局势函数$\nu : \mathbb{R}^{Nn} \to \bar{\mathbb{R}}_+$为：
+\begin{equation}
+	\nu(\mathbf{p}) = \sum_{(i,j) \in \varepsilon} \gamma_{ij}, 
+	\quad
+	\mathbf{p} = [\cdots; \mathbf{p}_i; \cdots].
+\end{equation}
+
+根据分布式控制律(\ref{分布式控制律})，可得系统动力学的紧凑表达式：
+\begin{equation}
+	\dot{\mathbf{p}} = \mathbf{v}^* = 
+	-\nabla \nu (\hat{\mathbf{p}}) - k_c(\hat{\mathbf{p}}-\mathbf{p}^*),
+	\label{系统动力学紧凑表达式}
+\end{equation}
+式中$\mathbf{v}^*=[\cdots;\mathbf{v}_i^*;\cdots]$，$\hat{\mathbf{p}}=[\cdots;\hat{\mathbf{p}}_i;\cdots]$。接着定义矩阵$\Gamma = [\tau_{ij}] \in \mathbb{R}^{N \times N}$其中：
+\begin{equation}
+	\tau_{ij} =
+	\begin{cases}
+		-\gamma_{ij}' & \text{若}j \in \mathcal{N}_i, \\
+		\sum_{s \in \mathcal{N}_i} \gamma_{is}' & \text{若}j = i, \\
+		0 & \text{否则}.
+	\end{cases}
+\end{equation}
+然后可以得到编队控制律的紧凑形式：
+\begin{equation}
+	\mathbf{v}^*=-\hat{\Gamma} \hat{\mathbf{p}} -k_c(\hat{\mathbf{p}}-\mathbf{p}^*),
+\end{equation}
+其中$\hat{\Gamma} = \Gamma \otimes I_n$。接下来对系统的输出方程(\ref{编队系统输出方程})在位置$\mathbf{p}^*$处进行线性化。省略二阶无穷小项$o (\|\mathbf{p}-\mathbf{p}^*\|^2)$，系统的输出方程可以写为：
+\begin{equation}
+	\mathbf{z}-\mathbf{z}^* \approx 
+	\mathcal{O}_{\mathbf{p}^*}(\mathbf{p}-\mathbf{p}^*),
+	\label{系统输出方程线性化}
+\end{equation}
+式中$\mathbf{z}^*=[\bar{\mathbf{z}^*};\tilde{\mathbf{z}^*}]$，其中$\bar{\mathbf{z}^*}=\frac{1}{2}[\cdots;h_{im}\|\mathbf{p}_i^*-\mathbf{p}_j^*\|^2;\cdots]$，以及$\tilde{\mathbf{z}^*}=[\cdots; \tilde{C}_i \mathbf{p}_i^*; \cdots]$。
+
+
+
+
+
+为了分析由分布式观测器和控制器构成的闭环系统的稳定性，定义位置控制误差为 $\bar{\mathbf{p}} = \mathbf{p} - \mathbf{p}^*$，位置估计误差为 $\tilde{\mathbf{p}} =\mathbf{p}- \hat{\mathbf{p}}$。构建如下包含编队势能和系统动能的候选李雅普诺夫函数：
+\begin{equation}
+	V = \sum_{(i,j) \in \mathcal{E}} \gamma_{ij} + \frac{k_c}{2} \bar{p}^T \bar{p} + \frac{k_o}{2} \tilde{p}^T \tilde{p}
+\end{equation}
+沿闭环系统轨迹对 $V$ 求解时间导数，并利用不等式进行放缩处理后可得：
+\begin{equation}
+	\dot{V} \le - \left[ k_o^2 \|\mathcal{O}_{p^*}\|_2^2 - \frac{(\rho_\Gamma + k_c)^2}{2\mu_1} - 2k_{\mu_1}k_{\mu_2}\mu_2 (\rho_\Gamma^2 + \rho_c^2) \right] \|\bar{p}\|^2 - \left( k_{\mu_1}k_{\mu_2}(k_c^2 - 2\mu_2 \rho_c^2) \right) \|\hat{p} - p^*\|^2
+\end{equation}
+式中 $\mathcal{O}_{p^*}$ 为系统的可观测性矩阵， $\rho_\Gamma$ 与 $\rho_c$ 分别为依据势函数边界及拓扑结构计算得出的正数上界， $\mu_1 \in (0, 2)$ 且 $\mu_2 > 1$ 为给定的放缩参数。
+
+根据李雅普诺夫稳定性定理，只要人为设计的反馈增益 $k_c$ 和 $k_o$ 满足以下下界条件：
+\begin{equation}
+	k_c > \sqrt{2\mu_2}\rho_c
+\end{equation}
+\begin{equation}
+	k_o > \sqrt{ \frac{(\rho_\Gamma + k_c)^2}{2\mu_1 \|\mathcal{O}_{p^*}\|_2^2} + \frac{2k_{\mu_1}(\mu_2 - 1)(\rho_\Gamma^2 + \rho_c^2)}{\|\mathcal{O}_{p^*}\|_2^2} }
+\end{equation}
+则可以保证 $\dot{V} \le 0$ 恒成立。进一步分析可知，如果存在位置估计误差 $\|p - \hat{p}\| \ne 0$ 或控制偏差 $\|\hat{p} - p^*\| \ne 0$，必定有 $\dot{V} < 0$。这证明了位置误差 $\bar{p}$ 和估计误差 $\tilde{p}$ 将局部渐近收敛至零。
+
+由于李雅普诺夫函数 $V$ 中包含了势能项 $\sum \gamma_{ij}$，且当相邻无人机间的距离趋近于碰撞下界 $\rho_{e_1}$ 或通信断裂上界 $\rho_{e_2}$ 时，势能 $\gamma_{ij}$ 会趋于正无穷大。鉴于 $\dot{V} \le 0$，系统总能量是单调递减或有界的，这意味着初始状态下满足安全约束的系统，在整个动态收敛过程中绝对不会逾越距离的极值边界。从而在理论上严格保证了无人机编队在飞行过程中的机间避碰与通信连通性。
