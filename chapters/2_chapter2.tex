@@ -26,7 +26,7 @@
 	\label{常见四旋翼飞行器}
 \end{figure}
 
-为建立精确且通用的动力学模型，本小节参考经典文献\parencite{6289431}的方法，对四旋翼无人机进行刚体动力学建模。如图所示，我们定义一个右手惯性坐标系   $O - X_eY_eZ_e$ ，这里令地面坐标系为惯性坐标系，其单位基向量为  $ \{\mathbf{e}_1, \mathbf{e}_2, \mathbf{e}_3\} $ ；以及一个固连于无人机质心的机体坐标系  $ O - X_bY_bZ_b $ ，其单位基向量为  $ \{\mathbf{b}_1, \mathbf{b}_2, \mathbf{b}_3\} $ 。无人机的姿态由从  $ O - X_eY_eZ_e $  到  $ O - X_bY_bZ_b $  的旋转矩阵  $ {}_b^\omega R = R = [{\mathbf{b}}_1,{\mathbf{b}}_2,{\mathbf{b}}_3]\in SO(3) $  描述。该矩阵属于特殊正交群，其中 $ \mathbf{b}_1 = R \mathbf{e}_1,  \mathbf{b}_2 = R \mathbf{e}_2, \mathbf{b}_3 = R \mathbf{e}_3 $。基于$ z-y-x $欧拉角顺序（即偏航角  $ \psi $ 、俯仰角  $ \theta $ 、滚转角  $ \phi $ ）来参数化旋转矩阵 $ \boldsymbol{R} $ ，其具体形式可写为：
+为建立精确且通用的动力学模型，本小节参考经典文献\parencite{6289431}的方法，对四旋翼无人机进行刚体动力学建模。如图所示，我们定义一个右手惯性坐标系   $O - X_eY_eZ_e$ ，这里令地面坐标系为惯性坐标系，其单位基向量为  $ \{\mathbf{e}_1, \mathbf{e}_2, \mathbf{e}_3\} $ ；以及一个固连于无人机质心的机体坐标系  $ O - X_bY_bZ_b $ ，其单位基向量为  $ \{\mathbf{b}_1, \mathbf{b}_2, \mathbf{b}_3\} $ 。无人机的姿态由从  $ O - X_eY_eZ_e $  到  $ O - X_bY_bZ_b $  的旋转矩阵  $ {}_b^\omega R = R = [{\mathbf{b}}_1,{\mathbf{b}}_2,{\mathbf{b}}_3]\in SO(3) $  描述。该矩阵属于特殊正交群，其中 $ \mathbf{b}_1 = R \mathbf{e}_1,  \mathbf{b}_2 = R \mathbf{e}_2, \mathbf{b}_3 = R \mathbf{e}_3 $。基于$ z-y-x $欧拉角顺序（即偏航角  $ \psi $ 、俯仰角  $ \theta $ 、滚转角  $ \phi $ ）来参数化旋转矩阵 $ {R} $ ，其具体形式可写为：
 \begin{equation}
 	{R} = {}_b^\omega R(\phi,\theta,\psi) = 
 	\begin{bmatrix}

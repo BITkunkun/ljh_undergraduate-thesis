@@ -35,29 +35,141 @@
 	\end{tabular}
 \end{table}
 
-在验证刚性编队局部收敛之后，进一步给出四个典型编队变换场景以验证方法的实用性，其与刚性编队局部收敛实例由相同的参数配置与期望编队位置，仅是初始位置不同，具体设置见表 。
+在验证刚性编队局部收敛之后，进一步给出四个典型编队变换场景以验证方法的实用性，其与刚性编队局部收敛实例由相同的参数配置与期望编队位置，仅是初始位置不同，具体设置见表\ref{无人机典型编队变换场景初始状态设置}，其中旋转矩阵$R$具体形式见(\ref{旋转矩阵})。
 
 \begin{table}[htbp]
 	\centering
 	\caption{无人机典型编队变换场景初始状态设置}
-	\label{tab:formation_transformation}
+	\label{无人机典型编队变换场景初始状态设置}
 	\renewcommand{\arraystretch}{1.5}
-	\begin{tabular}{c c m{8cm}}
+	\begin{tabular}{c c c}
 		\toprule
 		\textbf{场景编号} & \textbf{变换类型} & \textbf{初始位置参数设置} $\mathbf{p}_i(0)$ \\
 		\midrule
-		1 & 平移 (Translation) & $\mathbf{p}_i(0) = \mathbf{p}_i^* - [5, 5, 5]^T$，即初始位置由期望构型整体向负方向平移 5 m。 \\
-		2 & 旋转 (Rotation) & $\mathbf{p}_i(0) = \mathbf{R}(\alpha, \beta, \gamma)\mathbf{p}_i^*$，其中欧拉角设置为 $\alpha = \frac{\pi}{2}, \beta = \frac{\pi}{2}, \gamma = \frac{\pi}{2}$。 \\
-		3 & 扩张 (Expansion) & $\mathbf{p}_i(0) = 0.5 \mathbf{p}_i^*$，即初始编队尺度为期望构型的一半，随后向外扩张。 \\
-		4 & 收缩 (Shrinkage) & $\mathbf{p}_i(0) = 1.5 \mathbf{p}_i^*$，即初始编队尺度为期望构型的 1.5 倍，随后向内收缩。 \\
+		1 & 平移 & $\mathbf{p}_i(0) = 
+		\mathbf{p}_i^*-[5;5;5] , i \in \mathcal{I}_{4} $ \\
+		2 & 旋转 & $\mathbf{p}_i(0) =  R(\frac{\pi}{2},\frac{\pi}{2},\frac{\pi}{2})\mathbf{p}_i^*,i \in \mathcal{I}_{4}$\\
+		3 & 扩张 & $\mathbf{p}_i(0) =
+		0.5 \mathbf{p}_i^* ,i \in \mathcal{I}_{4}$ \\
+		4 & 收缩 & $\mathbf{p}_i(0)
+		= 1.5 \mathbf{p}_i^*, i \in \mathcal{I}_{4}$\\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
 
-\subsection{编队轨迹与机间距离收敛性验证}
+\subsection{仿真结果与分析}
+基于上述配置，经过MATLAB数值仿真计算对应的轨迹数据。其中，图\ref{基于非全维位置与距离量测的无人机编队位置轨迹}绘制了四台无人机从初始位置$\mathbf{p}_i(0)$收敛至期望位置$\mathbf{p}_i^*$的轨迹。图中的六条虚线表示无人机之间的通信和传感器网络的拓扑结构，四条实线表示每台无人机的真实轨迹。另外，为了剖析无人机编队的收敛过程，图\ref{基于非全维位置与距离量测的无人机编队位置轨迹三视图}中的三个子图分别绘制了无人机编队空间轨迹的三个视角下的收敛曲线。从轨迹形态分析，无人机在起始阶段表现出明显的非线性规避动作，而非直接指向目标点，这反映了控制器中基于奇异势场梯度的“形成项”与比例反馈“跟踪项”之间的动态竞争逻辑。在演化初期，由于初始位姿偏差较大，势场函数中$\gamma_{ij}$产生的梯度力占主导，引导无人机优先修正机间几何约束；随着估计偏差减小，跟踪项逐渐发挥主要作用，驱动集群整体平滑向全局坐标系下的期望位姿靠拢。
 
-\subsection{状态估计与控制误差演化分析}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\linewidth]{images/0330/1}
+	\caption{基于非全维位置与距离量测的无人机编队位置轨迹}
+	\label{基于非全维位置与距离量测的无人机编队位置轨迹}
+\end{figure}
+\begin{figure}[H]    % 常规操作\begin{figure}开头说明插入图片
+		\centering            % 前面说过，图片放置在中间
+		\subfloat[正视图]   % 第一张子图的下标（注意：注释要写在[]中括号内）
+		{
+			%\label{fig:subfig1}
+			\includegraphics[height=5cm, keepaspectratio]{images/0330/2}
+			% \label{}命令为每个子图添加标签，方便在正文中引用。如果你不需要引用的话，也可以不加这个命令，写法在下面有：
+			% \label{}命令的{}内第一个{}中的内容fig:subfig1就是你插入的这张子图的标签，注意每个标签都不能一样，要用合适的编号去区分，比如1、2、3......
+			% \label{}命令中{}内\includegraphics[]{}就是真正插入图片的命令，[]中的是图片的一些参数，{}就是图片的相对路径
+			% width=0.4\textwidth 就是设置图片的大小，这里设置的是文档宽度（\textwidth）的0.4倍，在设置时注意不要超宽，不然会报错，大家多设置几个数尝试一下就能理解了
+		}
+		\subfloat[侧视图]
+		{
+			%\label{fig:subfig2}
+			\includegraphics[height=5cm, keepaspectratio]{images/0330/3}
+		}
+		\subfloat[俯视图]
+		{
+			%\label{fig:subfig2}
+			\includegraphics[height=5cm, keepaspectratio]{images/0330/4}
+		}
+		\caption{基于非全维位置与距离量测的无人机编队位置轨迹三视图}    % 整个图片的说明，注释写在{}内
+		\label{基于非全维位置与距离量测的无人机编队位置轨迹三视图}            % 整个图片的标签编号，注意这里跟子图是一样的道理，标签不能重复 
+	\end{figure}
+
+针对复杂电磁环境下的通信与碰撞风险，图\ref{无人机间的相对距离演化收敛曲线}绘制了四台无人机间的距离演变曲线，可以看出在5s的仿真周期内，所有机间距离均严格限制在$[0.5\text{m}, 2.0\text{m}]$的预设区间内，有效验证了改进势场函数在边界处的奇异特性。即便在高斯噪声干扰下，距离曲线仍能稳定收敛至期望值 $\sqrt{2}m$ 。这种“硬约束”保障主要得益于公式 (\ref{gamma函数}) 中对数项的设计：当距离趋近临界值时，假设梯度力趋于无穷大，从而在控制层面上为集群提供了物理性的避碰与连通性保护，消除了动力学饱和前的安全隐患。然而，在真实场景中受物理约束影响，该设计假设不成立。本文的方法主要是设计梯度控制能够以无人机的最大驱动力和任务权重稳定在安全边界内。
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.8\linewidth]{images/0330/5}
+	\caption{无人机间的相对距离演化收敛曲线}
+	\label{无人机间的相对距离演化收敛曲线}
+\end{figure}
+
+分布式观测器的性能是本研究的核心指标，图\ref{基于非全维位置与距离量测的无人机编队估计误差曲线}和图\ref{基于非全维位置与距离量测的无人机编队控制误差曲线}分别绘制了四台无人机的编队位置估计误差与控制误差曲线，可以看出估计误差和位置误差能够在局部趋近于零。注意到编队收敛期间会存在微小的抖动，这是由高斯量测噪声所产生的误差已验证控制方法的鲁棒性，当测距误差为零时，相应的估计误差和控制误差均会收敛至零。此外，在无人机1的$z$维位置、无人机3的$x$维和$y$维位置、无人机4的全维位置拥有直接的量测信息，因此这些无人机对应维度的估计误差收敛速度更快且在噪声环境下表现出极强的鲁棒性。通过这一现象可以看出QR分解筛选出的关键状态测量值能够利用无穷小刚性拓扑的关联性，将绝对位置信息在集群内高效扩散，从而实现了即便在严重传感器受限情况下的全局状态一致性估计。
+
+\begin{figure}[H]
+	\centering
+	%\includegraphics[width=3in]{fig5}
+	\subfloat[无人机1的估计误差曲线]{
+		\includegraphics[height=4cm, keepaspectratio]{images/0330/10}
+		}
+	\subfloat[无人机2的估计误差曲线]{
+		\includegraphics[height=4cm, keepaspectratio]{images/0330/11}}
+	\\
+	\subfloat[无人机3的估计误差曲线]{
+		\includegraphics[height=4cm, keepaspectratio]{images/0330/12}}
+	\subfloat[无人机4的估计误差曲线]{
+		\includegraphics[height=4cm, keepaspectratio]{images/0330/13}}
+	\caption{基于非全维位置与距离量测的无人机编队估计误差曲线}
+	\label{基于非全维位置与距离量测的无人机编队估计误差曲线}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	%\includegraphics[width=3in]{fig5}
+	\subfloat[无人机1的控制误差曲线]{
+		\includegraphics[height=4cm, keepaspectratio]{images/0330/6}
+	}
+	\subfloat[无人机2的控制误差曲线]{
+		\includegraphics[height=4cm, keepaspectratio]{images/0330/7}}
+	\\
+	\subfloat[无人机3的控制误差曲线]{
+		\includegraphics[height=4cm, keepaspectratio]{images/0330/8}}
+	\subfloat[无人机4的控制误差曲线]{
+		\includegraphics[height=4cm, keepaspectratio]{images/0330/9}}
+	\caption{基于非全维位置与距离量测的无人机编队控制误差曲线}
+	\label{基于非全维位置与距离量测的无人机编队控制误差曲线}
+\end{figure}
+
+如图\ref{基于非全维位置与距离量测的无人机典型编队变换轨迹}所示，本文分别对平移、旋转、扩张与收缩四种基础编队变换场景进行了仿真测试。从图中各无人机的三维空间轨迹演化可以看出，在初始状态存在位置扰动，且系统仅具备非全维位置量测的严苛条件下，四架无人机均能沿平滑、无碰撞的路径精确收敛至新的期望几何构型。这一结果不仅验证了基于分布式观测器的全维状态估计在稳态重构时的精确性，更表明了基于固定编队中心偏置量调节机制的有效性。值得注意的是，在图\ref{基于非全维位置与距离量测的无人机典型编队变换轨迹}子图(c)的扩张与图\ref{基于非全维位置与距离量测的无人机典型编队变换轨迹}子图(d)的收缩变换中，无人机间的相对距离发生了显著的尺度伸缩。得益于所设计的复合控制律中势场梯度项的硬约束作用，集群在瞬态重构过程中自主协调了机动速度，始终未触发安全距离下界与通信距离上界，严格保障了编队机动过程中的网络连通性与物理安全性。
+
+\begin{figure}[H]
+	\centering
+	%\includegraphics[width=3in]{fig5}
+	\subfloat[平移变换轨迹]{
+		\includegraphics[height=5cm, keepaspectratio]{images/0330/15}
+	}
+	\subfloat[旋转变换轨迹]{
+		\includegraphics[height=5cm, keepaspectratio]{images/0330/16}}
+	\\
+	\subfloat[扩张变换轨迹]{
+		\includegraphics[height=5cm, keepaspectratio]{images/0330/17}
+		\label{扩张变换轨迹}
+		}
+	\subfloat[收缩变换轨迹]{
+		\includegraphics[height=5cm, keepaspectratio]{images/0330/18}
+		\label{收缩变换轨迹}
+		}
+	\caption{基于非全维位置与距离量测的无人机典型编队变换轨迹}
+	\label{基于非全维位置与距离量测的无人机典型编队变换轨迹}
+\end{figure}
+
+为进一步验证无人机集群在执行复杂连续任务时的动态适应能力与协同鲁棒性，图\ref{基于非全维位置与距离量测的无人机编队动态切换轨迹}展示了编队跟随虚拟中心点进行分段时变轨迹跟踪，并依次完成扩张、旋转、收缩的连续构型切换。图中黑色五角星标记了虚拟任务中心的起点与终点，彩色实线刻画了各无人机的连续真实飞行路径。由图可见，在大尺度的空间机动过程中，无人机集群能够紧密跟踪分段线性的时变参考轨迹；同时，在不同编队形态连续切换的过渡阶段，系统未出现控制发散或剧烈抖振现象，各节点轨迹平滑且协调一致。该综合仿真结果有力地证明了在异构传感与非全维量测的受限环境下，所设计的分布式状态观测器具备优异的实时状态重构能力，能够为上层协同控制器持续提供低延迟、高置信度的全维状态反馈。多无人机系统在面临大尺度空间平移与多模态构型切换的双重挑战下，依然能够维持底层的刚性拓扑约束与安全防撞边界。这充分展现了本文所提编队控制方法在应对高动态、高复杂度的真实战术场景时，具有极强的系统鲁棒性与工程应用潜力。
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.9\linewidth]{images/0330/untitled-1}
+	\caption{基于非全维位置与距离量测的无人机编队动态切换轨迹}
+	\label{基于非全维位置与距离量测的无人机编队动态切换轨迹}
+\end{figure}
+
+
 
 \section{Gazebo物理仿真平台验证}
 
