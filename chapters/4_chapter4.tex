@@ -177,12 +177,12 @@
 	\mathcal{O}_{\mathbf{p}^*}(\hat{\mathbf{p}}-\mathbf{p}^*)].
 	\label{紧凑观测器形式}
 \end{equation}
-接下来给出一些不等式来支撑方法的推导。首先考虑杨不等式：
+接下来给出一些不等式来支撑方法的推导。首先考虑杨不等式\cite{1934Inequalities}：
 \begin{equation}
 	x_1^\top x_2 \le \frac{x_1^\top x_1}{2\mu} + \frac{\mu x_2^\top x_2}{2}.
 	\label{杨不等式}
 \end{equation}
-对于$x_1 \in \mathbb{R}^n$，$x_2 \in \mathbb{R}^n$，以及任意正常数$\mu$，上述不等式成立。另外，不等式：
+对于$x_1 \in \mathbb{R}^n$，$x_2 \in \mathbb{R}^n$，以及任意正常数$\mu$，上述不等式成立。另外，不等式\cite{wyman1994linear}：
 \begin{equation}
 	x^\top \mathbf{P}_1 x \le
 	\lambda_\text{max}(\mathbf{P}_2^{-1} \mathbf{P}_1)x^\top \mathbf{P}_2 x \le
@@ -202,6 +202,7 @@
 \begin{equation}
 	V = \sum_{(i,j) \in \varepsilon} \gamma_{ij} + 
 	\frac{k_c}{2} \bar{\mathbf{p}}^\top \bar{\mathbf{p}} + \frac{k_o}{2} \tilde{\mathbf{p}}^\top \tilde{\mathbf{p}}
+	\label{李雅普诺夫函数}
 \end{equation}
 定义$V_1=\sum_{(i,j) \in \varepsilon}\gamma_{ij}$，$V_2=\frac{k_c}{2} \bar{\mathbf{p}}^\top \bar{\mathbf{p}}$，以及$V_3=\frac{k_o}{2} \tilde{\mathbf{p}}^\top \tilde{\mathbf{p}}$。接着定义$\mathcal{W}=\text{diag}\{\dots,\gamma_{ij}',\dots\}$和$\mathbf{e}=[\cdots;\mathbf{e}_{ij};\cdots]$，其中$\mathbf{e}_{ij}=\mathbf{p}_i-\mathbf{p}_j$，可以得到$\Gamma=\mathcal{H}\mathcal{W}\mathcal{H}^\top$和$\mathbf{e}=(\mathcal{H}^\top \otimes I_n)\mathbf{p}$，并推导出：
 \begin{align}
@@ -360,3 +361,13 @@
 	\dot{V}<0
 \end{equation}
 由此说明位置误差$\bar{\mathbf{p}}$和估计误差$\tilde{\mathbf{p}}$的局部渐进收敛性。
+
+接下来利用不变集的性质分析无人机编队在收敛过程中的避碰和通信保持，即满足不等式约束(\ref{距离约束条件})。首先，根据邻域条件(\ref{初值邻域条件})定义位置集合：
+\begin{equation}
+	\mathcal{S}_e = \{
+		\mathbf{p} \in \mathcal{U}_\mathbf{p} :
+		\forall(i,j) \in \varepsilon,
+		\rho_{e_1} < \|\mathbf{p}_i-\mathbf{p}_j\|< \rho_{e_2}.
+	\}
+\end{equation}
+由于李雅普诺夫函数(\ref{李雅普诺夫函数})包含势函数项$\sum_{(i,j) \in \varepsilon} \gamma_{ij}$。参考文献\parencite{4739215} 和$\dot{V}$的负定性，可说明$\mathcal{S}_e$为不变集，其在编队收敛过程中持续满足收敛条件(\ref{距离约束条件})。因此，当系统状态满足条件(\ref{初值邻域条件})时，邻居无人机间能够避免发生碰撞同时保持通信的约束。
